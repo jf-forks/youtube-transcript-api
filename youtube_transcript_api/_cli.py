@@ -7,6 +7,27 @@ import argparse
 from ._api import YouTubeTranscriptApi
 
 
+def format_start_time(seconds, format_hours=False):
+    if format_hours:
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))
+    else:
+        minutes, seconds = divmod(seconds, 60)
+        return '{:02}:{:02}'.format(int(minutes), int(seconds))
+
+def format_text_output(transcripts):
+    output = []
+    for video_id, snippets in transcripts.items():
+        output.append(video_id)
+        format_hours = False
+        if snippets[-1]['start'] > 3600:
+            format_hours = True
+        for snippet in snippets:
+            output.append('{} {}'.format(format_start_time(snippet['start'], format_hours), snippet['text']))
+    return '\n'.join(output)
+
+
 class YouTubeTranscriptCli():
     def __init__(self, args):
         self._args = args
@@ -32,10 +53,7 @@ class YouTubeTranscriptCli():
             if parsed_args.json:
                 print(json.dumps(transcripts))
             elif parsed_args.text:
-                for video_id, snippets in transcripts.items():
-                    print(video_id)
-                    for snippet in snippets:
-                        print(snippet['text'])
+                return format_text_output(transcripts)
             else:
                 return pprint.pformat(transcripts)
 
@@ -44,7 +62,7 @@ class YouTubeTranscriptCli():
     def _parse_args(self):
         parser = argparse.ArgumentParser(
             description=(
-                'LOL This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. '
+                'This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. '
                 'It also works for automatically generated subtitles and it does not require a headless browser, like '
                 'other selenium based solutions do!'
             )
