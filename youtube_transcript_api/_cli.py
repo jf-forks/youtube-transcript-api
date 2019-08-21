@@ -101,6 +101,7 @@ class YouTubeTranscriptCli():
             default='', metavar='URL',
             help='Use the specified HTTP proxy.'
         )
+
         parser.add_argument(
             '--https-proxy', dest='https_proxy',
             default='', metavar='URL',
