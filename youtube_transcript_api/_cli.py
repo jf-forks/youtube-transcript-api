@@ -25,15 +25,26 @@ class YouTubeTranscriptCli():
             proxies=proxies
         )
 
-        return '\n\n'.join(
-            [str(YouTubeTranscriptApi.CouldNotRetrieveTranscript(video_id)) for video_id in unretrievable_videos]
-            + ([json.dumps(transcripts) if parsed_args.json else pprint.pformat(transcripts)] if transcripts else [])
-        )
+        for video_id in unretrievable_videos:
+            print(str(YouTubeTranscriptApi.CouldNotRetrieveTranscript(video_id)))
+
+        if transcripts:
+            if parsed_args.json:
+                print(json.dumps(transcripts))
+            elif parsed_args.text:
+                for video_id, snippets in transcripts.items():
+                    print(video_id)
+                    for snippet in snippets:
+                        print(snippet['text'])
+            else:
+                return pprint.pformat(transcripts)
+
+        return ''
 
     def _parse_args(self):
         parser = argparse.ArgumentParser(
             description=(
-                'This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. '
+                'LOL This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. '
                 'It also works for automatically generated subtitles and it does not require a headless browser, like '
                 'other selenium based solutions do!'
             )
@@ -58,6 +69,15 @@ class YouTubeTranscriptCli():
             default=False,
             help='If this flag is set the output will be JSON formatted.',
         )
+
+        parser.add_argument(
+            '--text',
+            action='store_const',
+            const=True,
+            default=False,
+            help='Plain text.',
+        )
+
         parser.add_argument(
             '--http-proxy', dest='http_proxy',
             default='', metavar='URL',
